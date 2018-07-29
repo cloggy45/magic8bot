@@ -75,63 +75,10 @@ describe('Macd', () => {
     expect(macd.periods.length).toEqual(2)
   })
 
-  describe('should set EMAs', () => {
-    mockEmaCalculate
-      .mockReturnValueOnce(10)
-      .mockReturnValueOnce(20)
-      .mockReturnValueOnce(30)
-
-    it('short', () => {
-      macd.getEmaShort([])
-      // @ts-ignore
-      expect(macd.emaShort).toEqual(10)
-    })
-
-    it('long', () => {
-      macd.getEmaLong([])
-      // @ts-ignore
-      expect(macd.emaLong).toEqual(20)
-    })
-
-    it('macd', () => {
-      macd.getEmaMacd()
-      // @ts-ignore
-      expect(macd.emaMacd).toEqual(30)
-    })
-  })
-
-  it('should calculate macd period', () => {
-    // @ts-ignore
-    macd.emaShort = 30
-    // @ts-ignore
-    macd.emaLong = 10
-    // @ts-ignore
-    macd.emaMacd = 25
-    // @ts-ignore
-    macd.getEmaMacd = jest.fn()
-
-    macd.calculateMacd()
-
-    expect(macd.getEmaMacd).toHaveBeenCalledTimes(1)
-
-    // @ts-ignore
-    expect(macd.periods[0].macd).toEqual(20)
-    // @ts-ignore
-    expect(macd.periods[0].history).toEqual(-5)
-  })
-
-  it('should run calculation methods', () => {
+  it('checkOverbought is called', () => {
     macd.checkOverbought = jest.fn()
-    macd.getEmaShort = jest.fn()
-    macd.getEmaLong = jest.fn()
-    macd.calculateMacd = jest.fn()
-
     macd.calculate([])
-
     expect(macd.checkOverbought).toHaveBeenCalledTimes(1)
-    expect(macd.getEmaShort).toHaveBeenCalledTimes(1)
-    expect(macd.getEmaLong).toHaveBeenCalledTimes(1)
-    expect(macd.calculateMacd).toHaveBeenCalledTimes(1)
   })
 
   describe('should send correct signals', () => {

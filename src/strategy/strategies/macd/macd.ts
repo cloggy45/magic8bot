@@ -1,6 +1,7 @@
 import { eventBus, EVENT, EventBusEmitter, PeriodItem } from '@lib'
 import { EMA, RSI } from '../../indicators'
 import { BaseStrategy } from '../base-strategy'
+import { MACD } from '../../indicators/macd';
 
 export interface MacdOptions {
   period: string
@@ -67,38 +68,19 @@ export class Macd extends BaseStrategy<MacdOptions> {
 
   public calculate(periods: PeriodItem[]) {
     this.checkOverbought(periods)
-    this.getEmaShort(periods)
-    this.getEmaLong(periods)
 
-    this.calculateMacd()
+    const macdCalc = MACD.calculate(
+      this.emaShort, this.emaLong, this.emaMacd, this.periods,
+      this.options.emaShortPeriod, this.options.emaLongPeriod, this.options.signalPeriod
+    )
+
+    this.periods[0].macd = macdCalc.macd
+    this.periods[0].history = macdCalc.history
 
     // prettier-ignore
     const { rsi, periods: [{ history }] } = this
 
     this.calcEmitter({ rsi, history })
-  }
-
-  public calculateMacd() {
-    if (this.emaShort && this.emaLong) {
-      const macd = this.emaShort - this.emaLong
-      this.periods[0].macd = macd
-      this.getEmaMacd()
-      if (this.emaMacd) {
-        this.periods[0].history = macd - this.emaMacd
-      }
-    }
-  }
-
-  public getEmaShort(periods: PeriodItem[]) {
-    this.emaShort = EMA.calculate(this.emaShort, periods as any, this.options.emaShortPeriod)
-  }
-
-  public getEmaLong(periods: PeriodItem[]) {
-    this.emaLong = EMA.calculate(this.emaLong, periods as any, this.options.emaLongPeriod)
-  }
-
-  public getEmaMacd() {
-    this.emaMacd = EMA.calculate(this.emaMacd, this.periods, this.options.signalPeriod, 'macd')
   }
 
   public checkOverbought(periods: PeriodItem[]) {
